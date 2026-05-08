@@ -82,10 +82,18 @@ sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
 echo "已禁止大版本升级，也不提示"
 
 # 更新软件列表
-echo "正在执行 apt-get update..."
+echo "正在执行 apt-get update & upgrade"
 apt-get update
+apt-get upgrade -y
 
 echo "=== 开始下载基础工具 ==="
 apt-get -y install git curl net-tools gcc make cmake unzip
+
+echo "=== 开始下载开发环境 ==="
+apt-get -y install gcc-multilib
+
+echo "=== 开始下载 vm-tools ==="
+sudo apt-get install open-vm-tools-desktop -y
+echo "vm-tools已安装，复制功能需重启"
 
 echo -e "\n=== 脚本执行完毕！ ==="
