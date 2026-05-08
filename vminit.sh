@@ -77,6 +77,10 @@ else
     echo "系统已使用 USTC 源，跳过"
 fi
 
+# 禁止大版本升级，也不提示
+sudo sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+echo "已禁止大版本升级，也不提示"
+
 # 更新软件列表
 echo "正在执行 apt-get update..."
 apt-get update
