@@ -86,6 +86,13 @@ echo "正在执行 apt-get update & upgrade"
 apt-get update
 apt-get upgrade -y
 
+# 禁止自动更新和弹窗
+echo "禁止自动更新和弹窗"
+sudo systemctl stop apt-daily.timer apt-daily-upgrade.timer
+sudo systemctl disable apt-daily.timer apt-daily-upgrade.timer
+sudo systemctl stop apt-daily.service apt-daily-upgrade.service
+sudo systemctl disable apt-daily.service apt-daily-upgrade.service
+
 echo "=== 开始下载基础工具 ==="
 apt-get -y install git curl net-tools gcc make cmake unzip
 
