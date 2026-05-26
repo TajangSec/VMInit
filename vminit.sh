@@ -123,8 +123,32 @@ apt-get -y install git curl net-tools gcc make cmake unzip
 echo "=== 开始下载开发环境 ==="
 apt-get -y install gcc-multilib
 
-echo "=== 开始下载 vm-tools ==="
-sudo apt-get install open-vm-tools-desktop -y
-echo "vm-tools已安装，复制功能需重启"
+echo "=== 检测虚拟化平台 ==="
+
+VIRT=$(systemd-detect-virt)
+
+echo "当前虚拟化平台: $VIRT"
+
+if [ "$VIRT" = "vmware" ]; then
+    echo "=== 安装 VMware Tools ==="
+    sudo apt-get update
+    sudo apt-get install open-vm-tools-desktop -y
+
+elif [ "$VIRT" = "parallels" ]; then
+    echo "=== 检测到 Parallels ==="
+    echo "Parallels Tools 通常通过 GUI 挂载安装"
+
+    # 如果已挂载安装盘
+    if [ -d /media/$USER/Parallels\ Tools ]; then
+        cd /media/$USER/Parallels\ Tools
+        sudo ./install
+    else
+        echo "请在 Parallels 菜单中："
+        echo "Actions -> Install Parallels Tools"
+    fi
+
+else
+    echo "=== 未知虚拟化平台 ==="
+fi
 
 echo -e "\n=== 脚本执行完毕！ ==="
