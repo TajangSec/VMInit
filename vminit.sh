@@ -45,12 +45,16 @@ if ! grep -q "mirrors.ustc.edu.cn" /etc/apt/sources.list 2>/dev/null; then
     if ! command -v wget >/dev/null 2>&1; then
         echo "wget 未安装，开始安装..."
         apt_update_once
-		apt-get install -y wget
+        apt-get install -y wget
     fi
 
     # 获取 Ubuntu 代号
     ubuntu_lsb=$(lsb_release -c -s)
     echo "当前系统代号: ${ubuntu_lsb}"
+
+    # 获取系统架构
+    arch=$(dpkg --print-architecture)
+    echo "当前系统架构: ${arch}"
 
     # USTC repogen 地址
     src_url="http://mirrors.ustc.edu.cn/repogen/conf/ubuntu-https-4-${ubuntu_lsb}"
@@ -65,9 +69,29 @@ if ! grep -q "mirrors.ustc.edu.cn" /etc/apt/sources.list 2>/dev/null; then
         echo "已删除 ubuntu.sources"
     fi
 
-    # 下载并写入新源
-    if wget -qO /etc/apt/sources.list "$src_url"; then
+    # 下载源文件到临时文件
+    tmp_source="/tmp/ustc.sources.list"
+
+    if wget -qO "$tmp_source" "$src_url"; then
+
+        echo "USTC 源获取成功"
+
+        # ARM 架构修复
+        case "$arch" in
+            arm64|armhf|ppc64el|s390x|riscv64)
+                echo "检测到 ports 架构，修正为 ubuntu-ports 源..."
+                sed -i 's#https://mirrors.ustc.edu.cn/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu-ports/#g' "$tmp_source"
+                ;;
+            *)
+                echo "检测到标准架构，使用 ubuntu 主仓库"
+                ;;
+        esac
+
+        # 写入 sources.list
+        sudo cp "$tmp_source" /etc/apt/sources.list
+
         echo "USTC 源配置成功"
+
     else
         echo "获取 USTC 源失败，检查网络或 codename: $ubuntu_lsb"
         exit 1
